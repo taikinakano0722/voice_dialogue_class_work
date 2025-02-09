@@ -1,0 +1,18 @@
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install openai-whisper
+pip install transformers datasets
+pip install TTS
+pip install soundfile pydub scipy numpy
+pip install TTS[ja]
+pip install tensorboardX
+pip install fastchat
+pip install openai
+
+ pip install accelerate
+ pip install -U torch-tb-profiler
+
+ huggingfaceにログイン
+https://huggingface.co/meta-llama/Llama-2-7b-chat-hf で認証をする必要がある
+「Request Access」（アクセス申請）ボタンをクリック
+「Research or Commercial Use」の質問に回答し、申請を送信
+申請が承認されると、アクセスできるようになる

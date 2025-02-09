@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  pytorch-container:
+    build: .
+    container_name: ppdpp
+    volumes:
+      - .:/workspace  # ローカルのカレントディレクトリをコンテナの /workspace にマウント
+    runtime: nvidia  # GPU を使用
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    stdin_open: true
+    tty: true
