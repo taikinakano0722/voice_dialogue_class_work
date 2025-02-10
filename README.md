@@ -50,12 +50,25 @@ python run.py --data_name cb --do_train --do_eval
 ```
 python run.py --data_name cima --do_train --do_eval
 ```
-## 対話の実践
-### ディレクトリ移動
+- cbデータセットに対応するファインチューニングなし強化学習を行う場合
 ```
-cd ..
+python run.py --data_name cb --sft_dir none --do_train --do_eval
 ```
-### 対話の実行(音声サンプルファイルを入力とする)
+## 対話(音声なし)の実践
+### PPDPPディレクトリへ移動
 ```
-python voice_chat.py
+cd PPDPP
 ```
+### 対話の実行
+上記のPPDPPの学習が終了している必要がある。
+```
+python chat.py
+```
+AIが買い手で、AIになるべく高くものを売るゲーム。
+
+## 音声対話の実践(特に大したことはできない)
+リポジトリの元のディレクトリへ移動して以下のコマンドを打つとただの音声対話が実行できる。ただし、何かしらの音声ファイル(.wav)が必要。
+```
+python voice_chat_sample.py
+```
+

@@ -45,7 +45,10 @@ class Env(object):
         api_key = os.getenv("OPENAI_API_KEY")  # 環境変数からAPIキーを取得
         self.client=openai.OpenAI(api_key=api_key)
         self.args = args
-        self.dataset = dataset[mode]
+        if mode=="human":
+            self.dataset=dataset["train"]+dataset["test"]
+        else:
+            self.dataset = dataset[mode]
         self.max_turn = args.max_turn
         self.conversation = []
         self.cur_conver_step = 0
@@ -72,7 +75,7 @@ class Env(object):
         
     def reset(self):
         self.cur_conver_step = 0
-        if self.mode == 'train':
+        if self.mode == 'train' or self.mode=="human":
             self.case = np.random.choice(self.dataset)
         elif self.mode == 'test':
             self.case = self.dataset[self.test_num]
@@ -101,9 +104,12 @@ class Env(object):
         print(self.conversation[-1])
 
         #ユーザーの発話を生成(強化学習のときの仮想的なユーザー側の発話)
-        messages = message_format[self.args.data_name](self.case, 'user', self.conversation)
-        user_response = self.generate_response(self.args.user, messages, user_role[self.args.data_name])
-        user_response = self.postprocess_response(user_response, system_role[self.args.data_name])
+        if self.args.user=="human":
+            user_response=input("あなたの発話ターンです")
+        else:
+            messages = message_format[self.args.data_name](self.case, 'user', self.conversation)
+            user_response = self.generate_response(self.args.user, messages, user_role[self.args.data_name])
+            user_response = self.postprocess_response(user_response, system_role[self.args.data_name])
         self.conversation.append({"role":user_role[self.args.data_name], "content":user_response})
         print(self.conversation[-1])
 
@@ -262,7 +268,8 @@ class Env(object):
         
         if self.args.data_name in ['esc','cima']:
             rewards = []
-            print(outputs)
+            if self.mode!="human":
+                print(outputs)
             for output in outputs:
                 for key in self.reward_dict[self.args.data_name]:
                     if key in output.lower():
@@ -276,6 +283,7 @@ class Env(object):
         elif self.args.data_name == 'cb':
             deals = []
             rewards = []
+            human_score=0
             print(outputs)
             for output in outputs:
                 if 'have not' in output.lower():
@@ -288,6 +296,9 @@ class Env(object):
                     deal_price = float(prices[0])
                     reward = (deal_price - case['seller_price']) / (case['buyer_price'] - case['seller_price']) #cbデータセットでは売った値段によって報酬が変わる
                     rewards.append(reward)
+                    if self.mode=="human":
+                        human_score=(deal_price - case['buyer_price']) / (case['seller_price'] - case['buyer_price'])
+                
 
             if -1 in deals:
                 reward = -0.1
@@ -296,7 +307,11 @@ class Env(object):
                     reward = 0
                 else:
                     reward = max(set(rewards), key = rewards.count)
-            print(reward)
+            if self.mode=="human":
+                print(f"あなたの点数:{human_score}\n")   
+            else:    
+                print(reward)
+            
 
         return reward
 

@@ -24,9 +24,10 @@ class PPDPP(nn.Module):
         self.act = sorted(list(act[args.data_name].keys()))
         self.classifier = nn.Linear(config.hidden_size, len(self.act))
         self.tokenizer = tokenizer
-        self.optimizer = AdamW(
-            self.parameters(), lr=args.learning_rate
-        )
+        if args.user!="human":
+            self.optimizer = AdamW(
+                self.parameters(), lr=args.learning_rate
+            )
         self.eps = np.finfo(np.float32).eps.item()
         self.config = config
         self.args = args

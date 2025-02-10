@@ -16,6 +16,7 @@ os.environ["HF_HOME"] = llm_cache_dir
 
 
 def train(args, config, dataset, filename, tokenizer):
+    #強化学習ではdatasetを学習に使わないが、評価や会話の最初に必要な設定を行うときに使用する
     env = Env(args, dataset, mode='train') # env init
     set_random_seed(args.seed)
     policy = PPDPP(args, config, tokenizer) # policy network init
@@ -60,7 +61,7 @@ def train(args, config, dataset, filename, tokenizer):
                 if done:
                     if done == 1:
                         SR += 1
-                    AvgT += t+1
+                    AvgT += t+1 #かかったターン数
                     total_reward += epi_reward
                     break
 
@@ -71,7 +72,7 @@ def train(args, config, dataset, filename, tokenizer):
         enablePrint() # Enable print function
         print('loss : {} in epoch_uesr {}'.format(loss.item()/args.sample_times, args.sample_times))
         print('SR:{}, AvgT:{}, rewards:{} Total epoch_uesr:{}'.format(SR / args.sample_times,
-                    AvgT / args.sample_times, total_reward / args.sample_times, args.sample_times))
+                    AvgT / args.sample_times, total_reward / args.sample_times, args.sample_times)) #平均を求めている
 
         if train_step % args.eval_num == 0:
             SR_all = evaluate(args, dataset, policy, filename, train_step, env)
@@ -155,7 +156,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', '-seed', type=int, default=1, help='random seed.')
     parser.add_argument('--num_gpus', type=int, default=1, help='number of gpus.')
-    parser.add_argument('--epochs', '-me', type=int, default=50000, help='the number of RL train epoch')
     parser.add_argument('--gamma', type=float, default=0.999, help='reward discount factor.')
     parser.add_argument('--learning_rate', type=float, default=1e-6, help='learning rate.')
 
@@ -165,7 +165,7 @@ def main():
                         help='One of {vicuna, chatgpt, llama2}.')
     parser.add_argument('--user', type=str, default='chatgpt', choices=['vicuna','chatgpt','llama2'],
                         help='One of {vicuna, chatgpt, llama2}.')
-    parser.add_argument('--critic', type=str, default='chatgpt', choices=['vicuna','chatgpt','llama2'],
+    parser.add_argument('--critic', type=str, default='chatgpt', choices=['vicuna','chatgpt','llama2'], #報酬/終了判定のモデル
                         help='One of {vicuna, chatgpt, llama2}.')
     parser.add_argument('--sft_dir', default='sft', #../pretrain/outputs/best_pretrain.pt
                         type=str, help="Pretrain model path.")
@@ -198,9 +198,10 @@ def main():
     add_model_args(parser)
     args = parser.parse_args()
     args.cache_dir=os.environ["HF_HOME"]
-    args.model_path=f"{os.environ['HF_HOME']}/llm" #これあとで存在じないときつくるやつ実装　なんかcacheはplmとllmでわけたほうがよい
+    args.model_path=f"{os.environ['HF_HOME']}/model" #これあとで存在じないときつくるやつ実装
+
     #os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    #args.device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
+    args.device = torch.device('cuda') if torch.cuda.is_available() else 'cpu' 
     print(args.device)
     print('data_set:{}'.format(args.data_name))
 
@@ -209,7 +210,7 @@ def main():
 
     config = cfg[args.model_name].from_pretrained(args.model_name_or_path, cache_dir=args.cache_dir)
     tokenizer = tok[args.model_name].from_pretrained(args.model_name_or_path, do_lower_case=args.do_lower_case, cache_dir=args.cache_dir)
-
+    
     if args.sft_dir:
         args.sft_dir = os.path.join(args.sft_dir, args.data_name, args.model_name, 'best_checkpoint')
     if not os.path.exists(args.sft_dir):

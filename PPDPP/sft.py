@@ -240,7 +240,7 @@ def main():
                              "than this will be truncated, sequences shorter will be padded.")
     parser.add_argument('--seed', type=int, default=42,
                         help="random seed for initialization")
-    parser.add_argument('--gpu', default="0 1", type=str, #オリジナルは0,1,2
+    parser.add_argument('--gpu', default="0 1", type=str,
                         help="Use CUDA on the device.")
     parser.add_argument("--per_gpu_train_batch_size", default=2, type=int,
                         help="Batch size per GPU/CPU for training.")
@@ -248,7 +248,7 @@ def main():
                         help="Batch size per GPU/CPU for evaluation.")
     parser.add_argument("--num_train_epochs", default=10, type=float,
                         help="Total number of training epochs to perform.")
-    parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
+    parser.add_argument('--gradient_accumulation_steps', type=int, default=1, #デフォルトでは使用していない
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--warmup_steps", default=400, type=int,
                         help="Linear warmup over warmup_steps.")
