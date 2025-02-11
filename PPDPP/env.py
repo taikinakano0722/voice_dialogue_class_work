@@ -87,7 +87,12 @@ class Env(object):
             self.conversation = [{"role":"Teacher", "content":self.case['dialog'][0]['text']}, {"role":"Student", "content":self.case['dialog'][1]['text']}]
         elif self.args.data_name == 'cb':
             self.conversation = [{"role":"Buyer", "content":"Hi, how much is the %s?" % self.case['item_name']}, {"role":"Seller", "content":"Hi, this is a good %s and its price is %s." % (self.case['item_name'], self.case['seller_price'])}]
-        print(self.conversation)
+            if self.mode=="human":
+                print(f"あなたは売り手(seller)です。相手に{self.case['item_name']}をできるだけ高く売ってください。目標金額は{self.case['seller_price']}です。(英語のみ対応)\n")
+        if self.mode=="human":
+            print(f"買い手(相手):{self.conversation[0]['content']}\n売りて(あなた):{self.conversation[1]['content']}")
+        else:
+            print(self.conversation)
         return self.conversation
 
 
@@ -95,13 +100,17 @@ class Env(object):
         done = 0
         print('---------------step:{}-------------'.format(self.cur_conver_step))
         
-        print(action)
+        if self.mode!="human":
+            print(action)
         #システムの発話を生成
         messages = message_format[self.args.data_name](self.case, 'system', self.conversation, action)
         response = self.generate_response(self.args.system, messages, system_role[self.args.data_name])
         response = self.postprocess_response(response, user_role[self.args.data_name])
         self.conversation.append({"role":system_role[self.args.data_name],"content":response})
-        print(self.conversation[-1])
+        if self.mode=="human":
+            print(f"買い手(相手):{response}\n")
+        else:
+            print(self.conversation[-1])
 
         #ユーザーの発話を生成(強化学習のときの仮想的なユーザー側の発話)
         if self.args.user=="human":
@@ -111,7 +120,10 @@ class Env(object):
             user_response = self.generate_response(self.args.user, messages, user_role[self.args.data_name])
             user_response = self.postprocess_response(user_response, system_role[self.args.data_name])
         self.conversation.append({"role":user_role[self.args.data_name], "content":user_response})
-        print(self.conversation[-1])
+        if self.mode=="human":
+            print(f"売りて(自分):{user_response}\n")
+        else:
+            print(self.conversation[-1])
 
         messages = message_format[self.args.data_name](self.case, 'critic', self.conversation)
         reward = self.compute_reward(self.args.critic, messages, self.case)
@@ -284,7 +296,8 @@ class Env(object):
             deals = []
             rewards = []
             human_score=0
-            print(outputs)
+            if self.mode!="human":
+                print(outputs)
             for output in outputs:
                 if 'have not' in output.lower():
                     deals.append(-1)

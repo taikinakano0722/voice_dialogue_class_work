@@ -17,7 +17,6 @@ os.environ["HF_HOME"] = llm_cache_dir
 
 
 def chat(args, config, dataset, filename, tokenizer):
-    print("あなたは売り手(seller)です。相手にものをできるだけ高く売ってください。(英語のみ対応)\n")
     env = Env(args, dataset, mode='human') # env init
     set_random_seed(args.seed)
     policy = PPDPP(args, config, tokenizer) # policy network init

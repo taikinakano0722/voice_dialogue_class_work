@@ -60,14 +60,28 @@ python run.py --data_name cb --sft_dir none --do_train --do_eval
 cd PPDPP
 ```
 ### 対話の実行
+AIが買い手で、AIになるべく高くものを売るゲーム。
 上記のPPDPPの学習が終了している必要がある。
+
+- 完全に学習済みのモデル
 ```
 python chat.py
 ```
-AIが買い手で、AIになるべく高くものを売るゲーム。
+- ファインチューニングのみのモデル
+```
+python chat.py --load_rl_epoch 0
+```
+- 強化学習のみのモデル
+```
+python chat.py --sft_dir none
+```
+- 学習なし
+```
+python chat.py --sft_dir none --load_rl_epoch 0
+```
 
 ## 音声対話の実践(特に大したことはできない)
-リポジトリの元のディレクトリへ移動して以下のコマンドを打つとただの音声対話が実行できる。ただし、何かしらの音声ファイル(.wav)が必要。
+リポジトリの元のディレクトリへ移動して以下のコマンドを打つとただの音声対話が実行できる。ただし、何かしらの音声ファイル(.wav)が同じディレクトリに必要。
 ```
 python voice_chat_sample.py
 ```
